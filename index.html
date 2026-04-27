@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Single Task Worker</title>
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="集中" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='24' fill='%23000'/%3E%3Ctext x='64' y='80' text-anchor='middle' font-size='42' font-weight='800' fill='%23fff' font-family='serif'%3E集中%3C/text%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='36' fill='%23000'/%3E%3Ctext x='90' y='118' text-anchor='middle' font-size='62' font-weight='800' fill='%23fff' font-family='serif'%3E集中%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #000;
+      --panel: #070707;
+      --text: #f5f5f5;
+      --muted: #6d6d6d;
+      --dim: #333;
+      --line: #1d1d1d;
+      --line-strong: #333;
+      --radius: 18px;
+      --tap: 48px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      padding: max(20px, env(safe-area-inset-top))
+               max(16px, env(safe-area-inset-right))
+               max(28px, env(safe-area-inset-bottom))
+               max(16px, env(safe-area-inset-left));
+    }
+
+    button, input, select {
+      font: inherit;
+      color: inherit;
+    }
+
+    button {
+      min-height: var(--tap);
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      background: #121212;
+      cursor: pointer;
+      touch-action: manipulation;
+      transition: border-color .15s;
+    }
+
+    button:hover:not(:disabled) { border-color: #555; }
+    button:active:not(:disabled) { transform: translateY(1px); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    .app {
+      width: min(920px, 100%);
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin: 4px 0 24px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(22px, 4vw, 32px);
+      letter-spacing: -0.04em;
+    }
+
+    .meta {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .ghost {
+      padding: 0 14px;
+      color: #bbb;
+      background: transparent;
+      font-size: 14px;
+    }
+
+    .primary {
+      padding: 0 18px;
+      border-color: #666;
+      background: #f5f5f5;
+      color: #000;
+      font-weight: 700;
+    }
+
+    .composer {
+      display: grid;
+      grid-template-columns: 1fr 128px auto;
+      gap: 10px;
+      margin-bottom: 24px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+    }
+
+    input, select {
+      width: 100%;
+      min-height: var(--tap);
+      border: 1px solid var(--line-strong);
+      border-radius: 14px;
+      background: #050505;
+      padding: 0 14px;
+      outline: none;
+    }
+
+    input:focus, select:focus { border-color: #777; }
+
+    .tasks {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .task {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      min-height: 66px;
+      padding: 12px 12px 12px 18px;
+      border: 1px solid transparent;
+      border-radius: var(--radius);
+      background: transparent;
+    }
+
+    .task:nth-child(1) {
+      background: var(--panel);
+      border-color: #2c2c2c;
+    }
+
+    .task-title {
+      overflow-wrap: anywhere;
+      line-height: 1.3;
+    }
+
+    .task:nth-child(1) .task-title {
+      color: var(--text);
+      font-size: clamp(28px, 6vw, 52px);
+      font-weight: 800;
+      letter-spacing: -0.045em;
+    }
+
+    .task:nth-child(2) .task-title,
+    .task:nth-child(3) .task-title {
+      color: var(--muted);
+      font-size: clamp(20px, 4vw, 30px);
+      font-weight: 700;
+      letter-spacing: -0.035em;
+    }
+
+    .task:nth-child(n+4) .task-title {
+      color: var(--dim);
+      font-size: clamp(15px, 3vw, 20px);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .task-info {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+      color: #555;
+      font-size: 11px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      height: 22px;
+      padding: 0 9px;
+      border: 1px solid #222;
+      border-radius: 999px;
+      color: #777;
+    }
+
+    .complete {
+      width: 46px;
+      height: 46px;
+      min-height: 46px;
+      border-radius: 50%;
+      color: #eee;
+      font-size: 20px;
+      line-height: 1;
+      background: #101010;
+    }
+
+    .empty {
+      padding: 56px 16px;
+      border: 1px dashed var(--line-strong);
+      border-radius: var(--radius);
+      color: var(--muted);
+      text-align: center;
+    }
+
+    dialog {
+      width: min(760px, calc(100% - 28px));
+      max-height: min(680px, calc(100% - 28px));
+      border: 1px solid #333;
+      border-radius: 24px;
+      background: #050505;
+      color: var(--text);
+      padding: 0;
+    }
+
+    dialog::backdrop { background: rgba(0,0,0,.72); }
+
+    .archive-head {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 18px;
+      border-bottom: 1px solid var(--line);
+      background: #050505;
+    }
+
+    .archive-head h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: -0.03em;
+    }
+
+    .archive-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 14px;
+    }
+
+    .archived-task {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      color: #999;
+      background: #090909;
+    }
+
+    .archived-title { overflow-wrap: anywhere; }
+
+    .restore { padding: 0 14px; font-size: 14px; }
+
+    .splash {
+      min-height: 80vh;
+      display: grid;
+      place-items: center;
+      text-align: center;
+    }
+
+    .splash h1 {
+      font-size: clamp(32px, 7vw, 56px);
+      margin: 0 0 18px;
+    }
+
+    .splash p {
+      color: var(--muted);
+      margin: 0 0 28px;
+      font-size: 14px;
+    }
+
+    .signin {
+      padding: 0 24px;
+      min-height: 52px;
+      background: #f5f5f5;
+      color: #000;
+      font-weight: 700;
+      border-color: #888;
+    }
+
+    .floating-banner {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding: 12px 14px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: #0a0a0a;
+      color: #ccc;
+      font-size: 13px;
+    }
+
+    .floating-banner.visible { display: flex; }
+    .floating-banner p { margin: 0; flex: 1; line-height: 1.5; }
+    .floating-banner button { min-height: 36px; padding: 0 12px; font-size: 13px; }
+
+    .hidden { display: none !important; }
+
+    .notice {
+      margin-top: 24px;
+      color: #444;
+      font-size: 11px;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    /* PiP window */
+    .pip-style { /* injected via stylesheet, see buildPipDocument */ }
+
+    @media (max-width: 720px) {
+      header { align-items: flex-start; flex-direction: column; }
+      .header-actions { width: 100%; justify-content: flex-start; }
+      .composer { grid-template-columns: 1fr; }
+      .task { padding-left: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section id="splash" class="splash hidden">
+      <div>
+        <h1>集中</h1>
+        <p>Single Task Worker</p>
+        <button id="signinBtn" class="signin" type="button">Google でサインイン</button>
+        <p id="splashStatus" style="margin-top:18px;font-size:12px;"></p>
+      </div>
+    </section>
+
+    <div id="appView" class="hidden">
+      <header>
+        <div>
+          <h1>Single Task Worker</h1>
+          <div class="meta" id="summary">読み込み中…</div>
+        </div>
+        <div class="header-actions">
+          <button class="ghost" id="pipBtn" type="button">Floating</button>
+          <button class="ghost" id="archiveBtn" type="button">Archive</button>
+          <button class="ghost" id="signoutBtn" type="button">Sign out</button>
+        </div>
+      </header>
+
+      <div id="floatingBanner" class="floating-banner">
+        <p>Floating ウィンドウを使うと、別タブにいる間も「今やること」が画面に残ります。試しますか？</p>
+        <button id="floatingTry" type="button">試す</button>
+        <button id="floatingDismiss" class="ghost" type="button">後で</button>
+      </div>
+
+      <form class="composer" id="taskForm" autocomplete="off">
+        <input id="taskInput" name="task" type="text" placeholder="今やることを追加" aria-label="タスク名" required />
+        <select id="priorityInput" name="priority" aria-label="優先順位">
+          <option value="urgent">緊急</option>
+          <option value="high" selected>高</option>
+          <option value="low">低</option>
+        </select>
+        <button class="primary" type="submit">Add</button>
+      </form>
+
+      <section class="tasks" id="tasks" aria-live="polite"></section>
+
+      <p class="notice">優先順位「緊急 → 高 → 低」、同列は追加日時の古い順。Floating は Chrome デスクトップのみ。</p>
+    </div>
+  </main>
+
+  <dialog id="archiveDialog">
+    <div class="archive-head">
+      <h2>Archive</h2>
+      <button class="ghost" id="closeArchiveBtn" type="button">Close</button>
+    </div>
+    <div class="archive-list" id="archiveList"></div>
+  </dialog>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import {
+      getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect,
+      getRedirectResult, onAuthStateChanged, signOut
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import {
+      initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+      collection, onSnapshot, addDoc, updateDoc, doc, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+    // ===== Firebase 設定（Firebase Console からコピーして貼り付ける）=====
+    const firebaseConfig = {
+      apiKey: "AIzaSyBN8-3VgmoSIYwLue5SUw-odPFbzu90yuo",
+      authDomain: "single-task-worker.firebaseapp.com",
+      projectId: "single-task-worker",
+      storageBucket: "single-task-worker.firebasestorage.app",
+      messagingSenderId: "866635936867",
+      appId: "1:866635936867:web:6e507aaf9f7df8015fb456"
+    };
+    // ====================================================================
+
+    const PRIORITY_RANK = { urgent: 0, high: 1, low: 2 };
+    const PRIORITY_LABEL = { urgent: "緊急", high: "高", low: "低" };
+
+    const PIP_CSS = `
+      * { box-sizing: border-box; }
+      html, body { width: 100%; height: 100%; background: #000; color: #fff; margin: 0; }
+      body { display: grid; place-items: center; padding: 18px; font-family: ui-sans-serif, system-ui, -apple-system, "Hiragino Sans", sans-serif; }
+      .box { width: 100%; }
+      .label { color: #555; font-size: 11px; margin-bottom: 8px; letter-spacing: .12em; text-transform: uppercase; }
+      .task { color: #fff; font-size: 26px; font-weight: 850; line-height: 1.2; letter-spacing: -0.04em; overflow-wrap: anywhere; }
+      .empty { color: #666; font-size: 16px; }
+    `;
+
+    const els = {
+      splash: document.querySelector("#splash"),
+      splashStatus: document.querySelector("#splashStatus"),
+      signinBtn: document.querySelector("#signinBtn"),
+      appView: document.querySelector("#appView"),
+      summary: document.querySelector("#summary"),
+      form: document.querySelector("#taskForm"),
+      input: document.querySelector("#taskInput"),
+      priority: document.querySelector("#priorityInput"),
+      tasks: document.querySelector("#tasks"),
+      archiveBtn: document.querySelector("#archiveBtn"),
+      archiveDialog: document.querySelector("#archiveDialog"),
+      closeArchiveBtn: document.querySelector("#closeArchiveBtn"),
+      archiveList: document.querySelector("#archiveList"),
+      pipBtn: document.querySelector("#pipBtn"),
+      signoutBtn: document.querySelector("#signoutBtn"),
+      banner: document.querySelector("#floatingBanner"),
+      bannerTry: document.querySelector("#floatingTry"),
+      bannerDismiss: document.querySelector("#floatingDismiss"),
+    };
+
+    const isConfigured = !firebaseConfig.apiKey.startsWith("YOUR_");
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true;
+    const useRedirect = isIOS || isStandalone;
+    const pipSupported = "documentPictureInPicture" in window;
+
+    let app, auth, db, unsubscribe = null, currentUid = null;
+    let activeTasks = [];
+    let archivedTasks = [];
+    let pipWindow = null;
+    let pipLabel = null;
+    let pipBody = null;
+
+    if (!isConfigured) {
+      els.splash.classList.remove("hidden");
+      els.splashStatus.textContent =
+        "index.html の firebaseConfig を Firebase Console の設定で書き換えてください。";
+      els.signinBtn.disabled = true;
+    } else {
+      bootstrap();
+    }
+
+    function bootstrap() {
+      app = initializeApp(firebaseConfig);
+      db = initializeFirestore(app, {
+        localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+      });
+      auth = getAuth(app);
+
+      getRedirectResult(auth).catch((error) => {
+        console.warn("Redirect sign-in failed", error);
+      });
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) onSignedIn(user);
+        else onSignedOut();
+      });
+
+      els.signinBtn.addEventListener("click", handleSignIn);
+      els.signoutBtn.addEventListener("click", () => signOut(auth));
+      els.form.addEventListener("submit", handleAdd);
+      els.archiveBtn.addEventListener("click", () => els.archiveDialog.showModal());
+      els.closeArchiveBtn.addEventListener("click", () => els.archiveDialog.close());
+      els.pipBtn.addEventListener("click", openFloatingWindow);
+      els.bannerTry.addEventListener("click", () => {
+        localStorage.setItem("stw:floatingPromptShown", "1");
+        localStorage.setItem("stw:autoFloating", "1");
+        hideBanner();
+        openFloatingWindow();
+      });
+      els.bannerDismiss.addEventListener("click", () => {
+        localStorage.setItem("stw:floatingPromptShown", "1");
+        hideBanner();
+      });
+
+      document.addEventListener("visibilitychange", renderPip);
+
+      if (!pipSupported) {
+        els.pipBtn.disabled = true;
+        els.pipBtn.title =
+          "このブラウザは Document Picture-in-Picture に未対応です（Chrome デスクトップで使えます）";
+      }
+    }
+
+    async function handleSignIn() {
+      els.signinBtn.disabled = true;
+      els.splashStatus.textContent = "サインイン中…";
+      try {
+        const provider = new GoogleAuthProvider();
+        if (useRedirect) {
+          await signInWithRedirect(auth, provider);
+        } else {
+          await signInWithPopup(auth, provider);
+        }
+      } catch (error) {
+        console.warn("Sign-in failed", error);
+        els.splashStatus.textContent =
+          "サインインに失敗しました: " + (error.message || error.code);
+        els.signinBtn.disabled = false;
+      }
+    }
+
+    function onSignedIn(user) {
+      currentUid = user.uid;
+      els.splash.classList.add("hidden");
+      els.appView.classList.remove("hidden");
+      subscribeTasks();
+      maybeShowFloatingBanner();
+      maybeAutoFloating();
+    }
+
+    function onSignedOut() {
+      currentUid = null;
+      if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+      activeTasks = [];
+      archivedTasks = [];
+      els.appView.classList.add("hidden");
+      els.splash.classList.remove("hidden");
+      els.signinBtn.disabled = !isConfigured;
+      els.splashStatus.textContent = "";
+      closePip();
+    }
+
+    function subscribeTasks() {
+      const ref = collection(db, "users", currentUid, "tasks");
+      unsubscribe = onSnapshot(ref, (snap) => {
+        const all = [];
+        snap.forEach((d) => all.push({ id: d.id, ...d.data() }));
+        activeTasks = all
+          .filter((t) => !t.archivedAt)
+          .sort((a, b) => {
+            const p = PRIORITY_RANK[a.priority] - PRIORITY_RANK[b.priority];
+            if (p !== 0) return p;
+            const at = a.createdAt?.toMillis?.() ?? 0;
+            const bt = b.createdAt?.toMillis?.() ?? 0;
+            return at - bt;
+          });
+        archivedTasks = all
+          .filter((t) => t.archivedAt)
+          .sort((a, b) =>
+            (b.archivedAt?.toMillis?.() ?? 0) - (a.archivedAt?.toMillis?.() ?? 0)
+          );
+        render();
+      }, (error) => {
+        console.warn("snapshot error", error);
+      });
+    }
+
+    async function handleAdd(event) {
+      event.preventDefault();
+      const title = els.input.value.trim();
+      if (!title || !currentUid) return;
+      els.input.value = "";
+      els.input.focus();
+      const ref = collection(db, "users", currentUid, "tasks");
+      try {
+        await addDoc(ref, {
+          title,
+          priority: els.priority.value,
+          createdAt: serverTimestamp(),
+          archivedAt: null,
+        });
+      } catch (error) {
+        console.warn("add failed", error);
+      }
+    }
+
+    async function archiveTask(id) {
+      try {
+        await updateDoc(doc(db, "users", currentUid, "tasks", id), {
+          archivedAt: serverTimestamp(),
+        });
+      } catch (error) {
+        console.warn("archive failed", error);
+      }
+    }
+
+    async function restoreTask(id) {
+      try {
+        await updateDoc(doc(db, "users", currentUid, "tasks", id), {
+          archivedAt: null,
+        });
+      } catch (error) {
+        console.warn("restore failed", error);
+      }
+    }
+
+    function render() {
+      els.summary.textContent =
+        `${activeTasks.length} active / ${archivedTasks.length} archived`;
+      els.tasks.replaceChildren();
+
+      if (activeTasks.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "タスクはありません。ひとつだけ追加してください。";
+        els.tasks.append(empty);
+      } else {
+        for (const task of activeTasks) {
+          els.tasks.append(buildTaskRow(task));
+        }
+      }
+
+      renderArchive();
+      renderPip();
+    }
+
+    function buildTaskRow(task) {
+      const row = document.createElement("article");
+      row.className = "task";
+
+      const body = document.createElement("div");
+      const title = document.createElement("div");
+      title.className = "task-title";
+      title.textContent = task.title;
+
+      const info = document.createElement("div");
+      info.className = "task-info";
+      const pill = document.createElement("span");
+      pill.className = "pill";
+      pill.textContent = PRIORITY_LABEL[task.priority] ?? task.priority;
+      info.append(pill);
+      if (task.createdAt?.toDate) {
+        const time = document.createElement("span");
+        time.textContent = formatDate(task.createdAt.toDate()) + " added";
+        info.append(time);
+      }
+      body.append(title, info);
+
+      const done = document.createElement("button");
+      done.className = "complete";
+      done.type = "button";
+      done.title = "完了してアーカイブ";
+      done.setAttribute("aria-label", `${task.title}を完了してアーカイブ`);
+      done.textContent = "✓";
+      done.addEventListener("click", () => archiveTask(task.id));
+
+      row.append(body, done);
+      return row;
+    }
+
+    function renderArchive() {
+      els.archiveList.replaceChildren();
+      if (archivedTasks.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "アーカイブは空です。";
+        els.archiveList.append(empty);
+        return;
+      }
+      for (const task of archivedTasks) {
+        const row = document.createElement("article");
+        row.className = "archived-task";
+        const body = document.createElement("div");
+        const title = document.createElement("div");
+        title.className = "archived-title";
+        title.textContent = task.title;
+        const info = document.createElement("div");
+        info.className = "task-info";
+        const pill = document.createElement("span");
+        pill.className = "pill";
+        pill.textContent = PRIORITY_LABEL[task.priority] ?? task.priority;
+        info.append(pill);
+        if (task.archivedAt?.toDate) {
+          const time = document.createElement("span");
+          time.textContent = formatDate(task.archivedAt.toDate()) + " archived";
+          info.append(time);
+        }
+        body.append(title, info);
+
+        const restore = document.createElement("button");
+        restore.className = "restore";
+        restore.type = "button";
+        restore.textContent = "Restore";
+        restore.addEventListener("click", () => restoreTask(task.id));
+
+        row.append(body, restore);
+        els.archiveList.append(row);
+      }
+    }
+
+    function formatDate(date) {
+      return new Intl.DateTimeFormat("ja-JP", {
+        month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+      }).format(date);
+    }
+
+    async function openFloatingWindow() {
+      if (!pipSupported) return;
+      if (pipWindow && !pipWindow.closed) { pipWindow.focus(); return; }
+      try {
+        pipWindow = await documentPictureInPicture.requestWindow({
+          width: 360, height: 180,
+        });
+        buildPipDocument(pipWindow.document);
+        renderPip();
+        pipWindow.addEventListener("pagehide", () => {
+          pipWindow = null;
+          pipLabel = null;
+          pipBody = null;
+        });
+      } catch (error) {
+        console.warn("PiP failed", error);
+      }
+    }
+
+    function buildPipDocument(pipDoc) {
+      pipDoc.title = "Single Task Worker";
+      const style = pipDoc.createElement("style");
+      style.textContent = PIP_CSS;
+      pipDoc.head.append(style);
+
+      const box = pipDoc.createElement("div");
+      box.className = "box";
+
+      pipLabel = pipDoc.createElement("div");
+      pipLabel.className = "label";
+      pipLabel.textContent = "Focus Now";
+
+      pipBody = pipDoc.createElement("div");
+
+      box.append(pipLabel, pipBody);
+      pipDoc.body.replaceChildren(box);
+    }
+
+    function closePip() {
+      if (pipWindow && !pipWindow.closed) {
+        try { pipWindow.close(); } catch {}
+      }
+      pipWindow = null;
+      pipLabel = null;
+      pipBody = null;
+    }
+
+    function renderPip() {
+      if (!pipWindow || pipWindow.closed || !pipBody) return;
+      const current = activeTasks[0];
+      pipBody.className = current ? "task" : "empty";
+      pipBody.textContent = current ? current.title : "タスクはありません";
+    }
+
+    function maybeShowFloatingBanner() {
+      if (!pipSupported) return;
+      if (localStorage.getItem("stw:floatingPromptShown")) return;
+      els.banner.classList.add("visible");
+    }
+
+    function hideBanner() {
+      els.banner.classList.remove("visible");
+    }
+
+    function maybeAutoFloating() {
+      if (!pipSupported) return;
+      if (localStorage.getItem("stw:autoFloating") !== "1") return;
+      const handler = () => {
+        document.removeEventListener("click", handler, true);
+        document.removeEventListener("keydown", handler, true);
+        if (!pipWindow || pipWindow.closed) openFloatingWindow();
+      };
+      document.addEventListener("click", handler, true);
+      document.addEventListener("keydown", handler, true);
+    }
+  </script>
+</body>
+</html>
