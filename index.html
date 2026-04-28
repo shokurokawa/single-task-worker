@@ -15,327 +15,558 @@
     :root {
       color-scheme: dark;
       --bg: #000;
-      --panel: #070707;
-      --text: #f5f5f5;
-      --muted: #6d6d6d;
-      --dim: #333;
-      --line: #1d1d1d;
-      --line-strong: #333;
-      --radius: 18px;
-      --tap: 48px;
+      --text: #f0f0f0;
+      --text-2: #888;
+      --text-3: #3d3d3d;
+      --text-meta: #4a4a4a;
+      --line: #161616;
+      --surface: #0a0a0a;
+      --tap: 44px;
+      --serif: "Hiragino Mincho ProN", "YuMincho", "Yu Mincho", "Times New Roman", Georgia, serif;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", system-ui, sans-serif;
     }
 
-    * { box-sizing: border-box; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     html, body {
-      margin: 0;
-      min-height: 100%;
       background: var(--bg);
       color: var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+      font-family: var(--sans);
       -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
     }
 
     body {
-      padding: max(20px, env(safe-area-inset-top))
-               max(16px, env(safe-area-inset-right))
-               max(28px, env(safe-area-inset-bottom))
-               max(16px, env(safe-area-inset-left));
+      padding: max(28px, env(safe-area-inset-top))
+               max(20px, env(safe-area-inset-right))
+               max(40px, env(safe-area-inset-bottom))
+               max(20px, env(safe-area-inset-left));
     }
 
-    button, input, select {
-      font: inherit;
-      color: inherit;
-    }
+    button, input { font: inherit; color: inherit; }
 
-    button {
-      min-height: var(--tap);
-      border: 1px solid var(--line-strong);
-      border-radius: 999px;
-      background: #121212;
-      cursor: pointer;
-      touch-action: manipulation;
-      transition: border-color .15s;
-    }
+    .app { max-width: 720px; margin: 0 auto; }
 
-    button:hover:not(:disabled) { border-color: #555; }
-    button:active:not(:disabled) { transform: translateY(1px); }
-    button:disabled { opacity: .5; cursor: not-allowed; }
-
-    .app {
-      width: min(920px, 100%);
-      margin: 0 auto;
-    }
-
-    header {
+    /* ========= Header ========= */
+    .top {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin: 4px 0 24px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
     }
 
-    h1 {
-      margin: 0;
-      font-size: clamp(22px, 4vw, 32px);
-      letter-spacing: -0.04em;
+    .brand {
+      font-family: var(--serif);
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      color: var(--text-2);
     }
 
-    .meta {
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 12px;
+    .brand .mark {
+      color: var(--text);
+      font-size: 17px;
+      margin-right: 8px;
+      letter-spacing: 0.08em;
     }
 
-    .header-actions {
+    .brand .dot {
+      margin: 0 8px;
+      color: var(--text-3);
+    }
+
+    .top-actions {
       display: flex;
+      gap: 2px;
+    }
+
+    .top-actions button {
+      background: transparent;
+      border: none;
+      color: var(--text-2);
+      padding: 8px 12px;
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: color .15s, background .15s;
+    }
+
+    .top-actions button:hover:not(:disabled) {
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .top-actions button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .top-actions button.on {
+      color: var(--text);
+    }
+
+    .top-actions button.on::before {
+      content: "●";
+      margin-right: 6px;
+      font-size: 9px;
+      vertical-align: middle;
+    }
+
+    /* ========= Composer ========= */
+    .composer {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 8px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .composer input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--line);
+      color: var(--text);
+      padding: 14px 0 12px;
+      font-size: 18px;
+      font-family: var(--sans);
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .composer input:focus { border-bottom-color: var(--text-2); }
+    .composer input::placeholder { color: var(--text-3); }
+
+    .priority-row {
+      display: flex;
+      align-items: center;
       gap: 8px;
       flex-wrap: wrap;
-      justify-content: flex-end;
     }
 
-    .ghost {
-      padding: 0 14px;
-      color: #bbb;
-      background: transparent;
-      font-size: 14px;
+    .priority-row .label {
+      color: var(--text-3);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-right: 8px;
     }
 
-    .primary {
-      padding: 0 18px;
-      border-color: #666;
-      background: #f5f5f5;
-      color: #000;
-      font-weight: 700;
-    }
-
-    .composer {
-      display: grid;
-      grid-template-columns: 1fr 128px auto;
-      gap: 10px;
-      margin-bottom: 24px;
-      padding: 12px;
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      cursor: pointer;
       border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: var(--panel);
+      background: transparent;
+      color: var(--text-2);
+      transition: all .15s;
+      min-height: 32px;
     }
 
-    input, select {
-      width: 100%;
-      min-height: var(--tap);
-      border: 1px solid var(--line-strong);
-      border-radius: 14px;
-      background: #050505;
-      padding: 0 14px;
-      outline: none;
+    .chip:hover { border-color: var(--text-3); color: var(--text); }
+
+    .chip.selected {
+      background: var(--text);
+      border-color: var(--text);
+      color: #000;
     }
 
-    input:focus, select:focus { border-color: #777; }
+    .add-btn {
+      background: transparent;
+      border: 1px solid var(--text-2);
+      color: var(--text);
+      padding: 7px 18px;
+      border-radius: 999px;
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all .15s;
+      min-height: 32px;
+      margin-left: 8px;
+    }
 
+    .add-btn:hover { border-color: var(--text); color: var(--text); }
+
+    /* ========= Tasks ========= */
     .tasks {
       display: flex;
       flex-direction: column;
-      gap: 10px;
     }
 
     .task {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
+      display: flex;
       align-items: center;
-      min-height: 66px;
-      padding: 12px 12px 12px 18px;
-      border: 1px solid transparent;
-      border-radius: var(--radius);
-      background: transparent;
+      gap: 16px;
+      padding: 12px 0;
+      transition: background .2s, max-height .25s, opacity .25s,
+                  padding .25s, margin .25s;
+      max-height: 500px;
+      overflow: hidden;
+      position: relative;
     }
 
     .task:nth-child(1) {
-      background: var(--panel);
-      border-color: #2c2c2c;
-    }
-
-    .task-title {
-      overflow-wrap: anywhere;
-      line-height: 1.3;
+      padding: 36px 0 36px;
+      margin: 12px 0 16px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
     }
 
     .task:nth-child(1) .task-title {
+      font-family: var(--serif);
+      font-size: clamp(30px, 6vw, 54px);
+      font-weight: 700;
       color: var(--text);
-      font-size: clamp(28px, 6vw, 52px);
-      font-weight: 800;
-      letter-spacing: -0.045em;
+      line-height: 1.18;
+      letter-spacing: -0.01em;
     }
 
     .task:nth-child(2) .task-title,
     .task:nth-child(3) .task-title {
-      color: var(--muted);
-      font-size: clamp(20px, 4vw, 30px);
-      font-weight: 700;
-      letter-spacing: -0.035em;
+      font-size: clamp(17px, 3vw, 22px);
+      font-weight: 500;
+      color: var(--text-2);
+      line-height: 1.4;
     }
 
     .task:nth-child(n+4) .task-title {
-      color: var(--dim);
-      font-size: clamp(15px, 3vw, 20px);
-      font-weight: 600;
-      letter-spacing: -0.02em;
+      font-size: clamp(13px, 1.6vw, 15px);
+      font-weight: 400;
+      color: var(--text-3);
+      line-height: 1.45;
     }
 
-    .task-info {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 6px;
-      color: #555;
-      font-size: 11px;
+    .task-body { flex: 1; min-width: 0; }
+
+    .task-title {
+      overflow-wrap: anywhere;
+      position: relative;
     }
 
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      height: 22px;
-      padding: 0 9px;
-      border: 1px solid #222;
-      border-radius: 999px;
-      color: #777;
+    .task-title::before {
+      content: attr(data-title);
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      text-decoration: line-through;
+      text-decoration-color: currentColor;
+      clip-path: inset(0 100% 0 0);
+      pointer-events: none;
     }
+
+    .task-meta {
+      margin-top: 8px;
+      color: var(--text-meta);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .task:nth-child(n+4) .task-meta { display: none; }
 
     .complete {
-      width: 46px;
-      height: 46px;
-      min-height: 46px;
+      flex-shrink: 0;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
-      color: #eee;
-      font-size: 20px;
-      line-height: 1;
-      background: #101010;
-    }
-
-    .empty {
-      padding: 56px 16px;
-      border: 1px dashed var(--line-strong);
-      border-radius: var(--radius);
-      color: var(--muted);
-      text-align: center;
-    }
-
-    dialog {
-      width: min(760px, calc(100% - 28px));
-      max-height: min(680px, calc(100% - 28px));
-      border: 1px solid #333;
-      border-radius: 24px;
-      background: #050505;
-      color: var(--text);
-      padding: 0;
-    }
-
-    dialog::backdrop { background: rgba(0,0,0,.72); }
-
-    .archive-head {
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 18px;
-      border-bottom: 1px solid var(--line);
-      background: #050505;
-    }
-
-    .archive-head h2 {
-      margin: 0;
-      font-size: 18px;
-      letter-spacing: -0.03em;
-    }
-
-    .archive-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 14px;
-    }
-
-    .archived-task {
+      border: 1px solid var(--text-3);
+      background: transparent;
+      color: var(--text-3);
+      cursor: pointer;
       display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-      padding: 12px;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      color: #999;
-      background: #090909;
+      place-items: center;
+      font-size: 13px;
+      transition: border-color .15s, color .15s, transform .1s;
+      padding: 0;
+      margin-right: 7px;
     }
 
-    .archived-title { overflow-wrap: anywhere; }
+    .task:nth-child(1) .complete {
+      width: 44px; height: 44px; font-size: 18px;
+      margin-right: 0;
+    }
 
-    .restore { padding: 0 14px; font-size: 14px; }
+    .complete:hover {
+      border-color: var(--text);
+      color: var(--text);
+    }
 
+    .complete:active { transform: scale(0.92); }
+
+    /* Completion effect */
+    .task.completing {
+      pointer-events: none;
+      animation: complete-row .55s cubic-bezier(.5,0,.6,.2) forwards;
+    }
+
+    @keyframes complete-row {
+      0%   { background: rgba(255,255,255,0.18); }
+      45%  { background: rgba(255,255,255,0.06); max-height: 500px; opacity: 1; }
+      100% {
+        max-height: 0; opacity: 0;
+        padding-top: 0; padding-bottom: 0;
+        margin-top: 0; margin-bottom: 0;
+        border-color: transparent;
+        background: transparent;
+      }
+    }
+
+    .task.completing .complete {
+      animation: complete-pop .35s ease forwards;
+    }
+
+    @keyframes complete-pop {
+      0%   { transform: scale(1); }
+      45%  { transform: scale(1.5); border-color: var(--text); background: var(--text); color: #000; }
+      100% { transform: scale(0.6); opacity: 0; }
+    }
+
+    .task.completing .task-title::before {
+      animation: strike-reveal .42s linear forwards;
+    }
+
+    @keyframes strike-reveal {
+      to { clip-path: inset(0 0 0 0); }
+    }
+
+    /* Burst particles on the complete button */
+    .burst {
+      position: absolute;
+      pointer-events: none;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--text);
+      animation: burst .35s ease-out forwards;
+    }
+
+    @keyframes burst {
+      0%   { transform: translate(0,0) scale(1); opacity: 1; }
+      100% { transform: var(--burst-end) scale(0); opacity: 0; }
+    }
+
+    /* Body-level overlay that mirrors the button's pop animation,
+       so the expanding circle isn't clipped by .task { overflow: hidden } */
+    .pop-ring {
+      position: absolute;
+      pointer-events: none;
+      border-radius: 50%;
+      border: 1px solid var(--text-3);
+      background: transparent;
+      box-sizing: border-box;
+      animation: pop-ring .35s ease forwards;
+    }
+
+    @keyframes pop-ring {
+      0%   { transform: scale(1); border-color: var(--text-3); background: transparent; opacity: 1; }
+      45%  { transform: scale(1.5); border-color: var(--text); background: var(--text); opacity: 1; }
+      100% { transform: scale(0.6); border-color: var(--text); background: var(--text); opacity: 0; }
+    }
+
+    /* Empty state */
+    .empty {
+      padding: 80px 20px;
+      text-align: center;
+      color: var(--text-3);
+      font-family: var(--serif);
+      font-size: 17px;
+      letter-spacing: 0.04em;
+    }
+
+    /* ========= Splash ========= */
     .splash {
-      min-height: 80vh;
+      min-height: 78vh;
       display: grid;
       place-items: center;
       text-align: center;
     }
 
-    .splash h1 {
-      font-size: clamp(32px, 7vw, 56px);
-      margin: 0 0 18px;
+    .splash-mark {
+      font-family: var(--serif);
+      font-size: clamp(56px, 12vw, 96px);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
     }
 
-    .splash p {
-      color: var(--muted);
-      margin: 0 0 28px;
-      font-size: 14px;
+    .splash-sub {
+      color: var(--text-3);
+      font-size: 11px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      margin-bottom: 44px;
     }
 
     .signin {
-      padding: 0 24px;
-      min-height: 52px;
-      background: #f5f5f5;
+      background: var(--text);
       color: #000;
-      font-weight: 700;
-      border-color: #888;
+      border: none;
+      padding: 14px 30px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: opacity .15s, transform .1s;
     }
 
-    .floating-banner {
-      display: none;
+    .signin:hover { opacity: 0.85; }
+    .signin:active { transform: scale(0.98); }
+    .signin:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .splash-status {
+      margin-top: 22px;
+      color: var(--text-3);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      max-width: 360px;
+      line-height: 1.5;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ========= Archive Dialog ========= */
+    dialog {
+      margin: auto;
+      width: min(640px, calc(100% - 32px));
+      max-height: calc(100vh - 60px);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--text);
+      padding: 0;
+      box-shadow: 0 30px 80px rgba(0,0,0,.7);
+    }
+
+    dialog::backdrop {
+      background: rgba(0,0,0,.85);
+      backdrop-filter: blur(6px);
+    }
+
+    .archive-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 22px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .archive-head h2 {
+      font-family: var(--serif);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      margin: 0;
+    }
+
+    .archive-head .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-2);
+      cursor: pointer;
+      font-size: 12px;
+      letter-spacing: 0.05em;
+      padding: 6px 10px;
+      border-radius: 4px;
+    }
+
+    .archive-head .close-btn:hover {
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .archive-list {
+      max-height: 60vh;
+      overflow-y: auto;
+      padding: 6px 0;
+    }
+
+    .archived-task {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
       gap: 12px;
-      margin-bottom: 18px;
-      padding: 12px 14px;
-      border: 1px solid var(--line-strong);
-      border-radius: var(--radius);
-      background: #0a0a0a;
-      color: #ccc;
-      font-size: 13px;
+      padding: 14px 24px;
+      color: var(--text-2);
+      font-size: 14px;
+      border-bottom: 1px solid transparent;
+      transition: background .15s;
     }
 
-    .floating-banner.visible { display: flex; }
-    .floating-banner p { margin: 0; flex: 1; line-height: 1.5; }
-    .floating-banner button { min-height: 36px; padding: 0 12px; font-size: 13px; }
+    .archived-task + .archived-task {
+      border-top: 1px solid var(--line);
+    }
+
+    .archived-task:hover {
+      background: rgba(255,255,255,0.02);
+    }
+
+    .archived-info {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .archived-info .archived-title {
+      overflow-wrap: anywhere;
+      color: var(--text-2);
+    }
+
+    .archived-info .archived-meta {
+      font-size: 10px;
+      color: var(--text-meta);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .restore {
+      background: transparent;
+      border: 1px solid var(--text-3);
+      color: var(--text-2);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all .15s;
+      flex-shrink: 0;
+    }
+
+    .restore:hover {
+      border-color: var(--text);
+      color: var(--text);
+    }
+
+    .archive-empty {
+      padding: 60px 24px;
+      text-align: center;
+      color: var(--text-3);
+      font-family: var(--serif);
+      font-size: 14px;
+    }
 
     .hidden { display: none !important; }
 
-    .notice {
-      margin-top: 24px;
-      color: #444;
-      font-size: 11px;
-      line-height: 1.6;
-      text-align: center;
-    }
-
-    /* PiP window */
-    .pip-style { /* injected via stylesheet, see buildPipDocument */ }
-
-    @media (max-width: 720px) {
-      header { align-items: flex-start; flex-direction: column; }
-      .header-actions { width: 100%; justify-content: flex-start; }
-      .composer { grid-template-columns: 1fr; }
-      .task { padding-left: 14px; }
+    @media (max-width: 600px) {
+      .top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+      }
+      .top-actions { margin-left: -8px; }
     }
   </style>
 </head>
@@ -343,52 +574,44 @@
   <main class="app">
     <section id="splash" class="splash hidden">
       <div>
-        <h1>集中</h1>
-        <p>Single Task Worker</p>
+        <div class="splash-mark">集中</div>
+        <div class="splash-sub">Single Task Worker</div>
         <button id="signinBtn" class="signin" type="button">Google でサインイン</button>
-        <p id="splashStatus" style="margin-top:18px;font-size:12px;"></p>
+        <p id="splashStatus" class="splash-status"></p>
       </div>
     </section>
 
     <div id="appView" class="hidden">
-      <header>
-        <div>
-          <h1>Single Task Worker</h1>
-          <div class="meta" id="summary">読み込み中…</div>
+      <div class="top">
+        <div class="brand">
+          <span class="mark">集中</span><span id="summary">読み込み中</span>
         </div>
-        <div class="header-actions">
-          <button class="ghost" id="pipBtn" type="button">Floating</button>
-          <button class="ghost" id="archiveBtn" type="button">Archive</button>
-          <button class="ghost" id="signoutBtn" type="button">Sign out</button>
+        <div class="top-actions">
+          <button id="pipBtn" type="button">Floating</button>
+          <button id="archiveBtn" type="button">Archive</button>
+          <button id="signoutBtn" type="button">Sign out</button>
         </div>
-      </header>
-
-      <div id="floatingBanner" class="floating-banner">
-        <p>Floating ウィンドウを使うと、別タブにいる間も「今やること」が画面に残ります。試しますか？</p>
-        <button id="floatingTry" type="button">試す</button>
-        <button id="floatingDismiss" class="ghost" type="button">後で</button>
       </div>
 
       <form class="composer" id="taskForm" autocomplete="off">
-        <input id="taskInput" name="task" type="text" placeholder="今やることを追加" aria-label="タスク名" required />
-        <select id="priorityInput" name="priority" aria-label="優先順位">
-          <option value="urgent">緊急</option>
-          <option value="high" selected>高</option>
-          <option value="low">低</option>
-        </select>
-        <button class="primary" type="submit">Add</button>
+        <input id="taskInput" type="text" placeholder="今やることを書く" required />
+        <div class="priority-row">
+          <span class="label">優先順位</span>
+          <button type="button" class="chip" data-priority="urgent">緊急</button>
+          <button type="button" class="chip selected" data-priority="high">高</button>
+          <button type="button" class="chip" data-priority="low">低</button>
+          <button type="submit" class="add-btn">追加</button>
+        </div>
       </form>
 
       <section class="tasks" id="tasks" aria-live="polite"></section>
-
-      <p class="notice">優先順位「緊急 → 高 → 低」、同列は追加日時の古い順。Floating は Chrome デスクトップのみ。</p>
     </div>
   </main>
 
   <dialog id="archiveDialog">
     <div class="archive-head">
       <h2>Archive</h2>
-      <button class="ghost" id="closeArchiveBtn" type="button">Close</button>
+      <button id="closeArchiveBtn" class="close-btn" type="button">Close</button>
     </div>
     <div class="archive-list" id="archiveList"></div>
   </dialog>
@@ -404,7 +627,6 @@
       collection, onSnapshot, addDoc, updateDoc, doc, serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-    // ===== Firebase 設定（Firebase Console からコピーして貼り付ける）=====
     const firebaseConfig = {
       apiKey: "AIzaSyBN8-3VgmoSIYwLue5SUw-odPFbzu90yuo",
       authDomain: "single-task-worker.firebaseapp.com",
@@ -413,19 +635,23 @@
       messagingSenderId: "866635936867",
       appId: "1:866635936867:web:6e507aaf9f7df8015fb456"
     };
-    // ====================================================================
 
     const PRIORITY_RANK = { urgent: 0, high: 1, low: 2 };
     const PRIORITY_LABEL = { urgent: "緊急", high: "高", low: "低" };
 
     const PIP_CSS = `
-      * { box-sizing: border-box; }
-      html, body { width: 100%; height: 100%; background: #000; color: #fff; margin: 0; }
-      body { display: grid; place-items: center; padding: 18px; font-family: ui-sans-serif, system-ui, -apple-system, "Hiragino Sans", sans-serif; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { width: 100%; height: 100%; background: #000; color: #fff; }
+      body { display: grid; place-items: center; padding: 22px;
+             font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", system-ui, sans-serif; }
       .box { width: 100%; }
-      .label { color: #555; font-size: 11px; margin-bottom: 8px; letter-spacing: .12em; text-transform: uppercase; }
-      .task { color: #fff; font-size: 26px; font-weight: 850; line-height: 1.2; letter-spacing: -0.04em; overflow-wrap: anywhere; }
-      .empty { color: #666; font-size: 16px; }
+      .label { color: #555; font-size: 10px; margin-bottom: 10px;
+               letter-spacing: 0.22em; text-transform: uppercase; }
+      .task { color: #fff; font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
+              font-size: 26px; font-weight: 700; line-height: 1.18;
+              letter-spacing: -0.005em; overflow-wrap: anywhere; }
+      .empty { color: #444; font-size: 14px;
+               font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; }
     `;
 
     const els = {
@@ -436,7 +662,6 @@
       summary: document.querySelector("#summary"),
       form: document.querySelector("#taskForm"),
       input: document.querySelector("#taskInput"),
-      priority: document.querySelector("#priorityInput"),
       tasks: document.querySelector("#tasks"),
       archiveBtn: document.querySelector("#archiveBtn"),
       archiveDialog: document.querySelector("#archiveDialog"),
@@ -444,9 +669,7 @@
       archiveList: document.querySelector("#archiveList"),
       pipBtn: document.querySelector("#pipBtn"),
       signoutBtn: document.querySelector("#signoutBtn"),
-      banner: document.querySelector("#floatingBanner"),
-      bannerTry: document.querySelector("#floatingTry"),
-      bannerDismiss: document.querySelector("#floatingDismiss"),
+      chips: document.querySelectorAll(".chip"),
     };
 
     const isConfigured = !firebaseConfig.apiKey.startsWith("YOUR_");
@@ -461,8 +684,11 @@
     let activeTasks = [];
     let archivedTasks = [];
     let pipWindow = null;
-    let pipLabel = null;
-    let pipBody = null;
+    let pipLabelEl = null;
+    let pipBodyEl = null;
+    let closingPipProgrammatically = false;
+    let floatingMode = localStorage.getItem("stw:floating") === "1";
+    let selectedPriority = "high";
 
     if (!isConfigured) {
       els.splash.classList.remove("hidden");
@@ -494,25 +720,28 @@
       els.form.addEventListener("submit", handleAdd);
       els.archiveBtn.addEventListener("click", () => els.archiveDialog.showModal());
       els.closeArchiveBtn.addEventListener("click", () => els.archiveDialog.close());
-      els.pipBtn.addEventListener("click", openFloatingWindow);
-      els.bannerTry.addEventListener("click", () => {
-        localStorage.setItem("stw:floatingPromptShown", "1");
-        localStorage.setItem("stw:autoFloating", "1");
-        hideBanner();
-        openFloatingWindow();
-      });
-      els.bannerDismiss.addEventListener("click", () => {
-        localStorage.setItem("stw:floatingPromptShown", "1");
-        hideBanner();
+      els.archiveDialog.addEventListener("click", (e) => {
+        if (e.target === els.archiveDialog) els.archiveDialog.close();
       });
 
-      document.addEventListener("visibilitychange", renderPip);
+      els.pipBtn.addEventListener("click", toggleFloating);
+      document.addEventListener("visibilitychange", onVisibilityChange);
+
+      els.chips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          els.chips.forEach((c) => c.classList.remove("selected"));
+          chip.classList.add("selected");
+          selectedPriority = chip.dataset.priority;
+          if (els.input.value.trim()) els.input.focus();
+        });
+      });
 
       if (!pipSupported) {
         els.pipBtn.disabled = true;
         els.pipBtn.title =
-          "このブラウザは Document Picture-in-Picture に未対応です（Chrome デスクトップで使えます）";
+          "Document Picture-in-Picture に未対応（Chrome デスクトップ最新版で利用可）";
       }
+      renderPipButton();
     }
 
     async function handleSignIn() {
@@ -520,11 +749,8 @@
       els.splashStatus.textContent = "サインイン中…";
       try {
         const provider = new GoogleAuthProvider();
-        if (useRedirect) {
-          await signInWithRedirect(auth, provider);
-        } else {
-          await signInWithPopup(auth, provider);
-        }
+        if (useRedirect) await signInWithRedirect(auth, provider);
+        else await signInWithPopup(auth, provider);
       } catch (error) {
         console.warn("Sign-in failed", error);
         els.splashStatus.textContent =
@@ -538,8 +764,6 @@
       els.splash.classList.add("hidden");
       els.appView.classList.remove("hidden");
       subscribeTasks();
-      maybeShowFloatingBanner();
-      maybeAutoFloating();
     }
 
     function onSignedOut() {
@@ -551,7 +775,7 @@
       els.splash.classList.remove("hidden");
       els.signinBtn.disabled = !isConfigured;
       els.splashStatus.textContent = "";
-      closePip();
+      closePipProgrammatic();
     }
 
     function subscribeTasks() {
@@ -571,8 +795,7 @@
         archivedTasks = all
           .filter((t) => t.archivedAt)
           .sort((a, b) =>
-            (b.archivedAt?.toMillis?.() ?? 0) - (a.archivedAt?.toMillis?.() ?? 0)
-          );
+            (b.archivedAt?.toMillis?.() ?? 0) - (a.archivedAt?.toMillis?.() ?? 0));
         render();
       }, (error) => {
         console.warn("snapshot error", error);
@@ -585,11 +808,10 @@
       if (!title || !currentUid) return;
       els.input.value = "";
       els.input.focus();
-      const ref = collection(db, "users", currentUid, "tasks");
       try {
-        await addDoc(ref, {
+        await addDoc(collection(db, "users", currentUid, "tasks"), {
           title,
-          priority: els.priority.value,
+          priority: selectedPriority,
           createdAt: serverTimestamp(),
           archivedAt: null,
         });
@@ -598,13 +820,56 @@
       }
     }
 
-    async function archiveTask(id) {
+    async function archiveTask(id, rowEl) {
+      if (rowEl) {
+        const btn = rowEl.querySelector(".complete");
+        rowEl.classList.add("completing");
+        spawnPopRing(btn);
+        spawnBurst(btn);
+        await new Promise((r) => setTimeout(r, 520));
+      }
       try {
         await updateDoc(doc(db, "users", currentUid, "tasks", id), {
           archivedAt: serverTimestamp(),
         });
       } catch (error) {
         console.warn("archive failed", error);
+      }
+    }
+
+    function spawnPopRing(target) {
+      if (!target) return;
+      const rect = target.getBoundingClientRect();
+      const ring = document.createElement("div");
+      ring.className = "pop-ring";
+      ring.style.left = (rect.left + window.scrollX) + "px";
+      ring.style.top = (rect.top + window.scrollY) + "px";
+      ring.style.width = rect.width + "px";
+      ring.style.height = rect.height + "px";
+      document.body.append(ring);
+      setTimeout(() => ring.remove(), 400);
+    }
+
+    function spawnBurst(target) {
+      if (!target) return;
+      const rect = target.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2 + window.scrollX;
+      const cy = rect.top + rect.height / 2 + window.scrollY;
+      const N = 8;
+      for (let i = 0; i < N; i++) {
+        const dot = document.createElement("div");
+        dot.className = "burst";
+        const angle = (Math.PI * 2 * i) / N + Math.random() * 0.3;
+        const dist = 36 + Math.random() * 14;
+        dot.style.left = cx - 3 + "px";
+        dot.style.top = cy - 3 + "px";
+        dot.style.position = "absolute";
+        dot.style.setProperty(
+          "--burst-end",
+          `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px)`
+        );
+        document.body.append(dot);
+        setTimeout(() => dot.remove(), 400);
       }
     }
 
@@ -619,21 +884,24 @@
     }
 
     function render() {
+      const n = activeTasks.length;
+      const a = archivedTasks.length;
       els.summary.textContent =
-        `${activeTasks.length} active / ${archivedTasks.length} archived`;
+        n === 0 && a === 0
+          ? "no tasks"
+          : `${n} active${a ? ` · ${a} archived` : ""}`;
       els.tasks.replaceChildren();
 
-      if (activeTasks.length === 0) {
+      if (n === 0) {
         const empty = document.createElement("div");
         empty.className = "empty";
-        empty.textContent = "タスクはありません。ひとつだけ追加してください。";
+        empty.textContent = "ひとつだけ書く。";
         els.tasks.append(empty);
       } else {
         for (const task of activeTasks) {
           els.tasks.append(buildTaskRow(task));
         }
       }
-
       renderArchive();
       renderPip();
     }
@@ -641,32 +909,30 @@
     function buildTaskRow(task) {
       const row = document.createElement("article");
       row.className = "task";
+      row.dataset.taskId = task.id;
 
       const body = document.createElement("div");
+      body.className = "task-body";
       const title = document.createElement("div");
       title.className = "task-title";
       title.textContent = task.title;
+      title.dataset.title = task.title;
+      body.append(title);
 
-      const info = document.createElement("div");
-      info.className = "task-info";
-      const pill = document.createElement("span");
-      pill.className = "pill";
-      pill.textContent = PRIORITY_LABEL[task.priority] ?? task.priority;
-      info.append(pill);
-      if (task.createdAt?.toDate) {
-        const time = document.createElement("span");
-        time.textContent = formatDate(task.createdAt.toDate()) + " added";
-        info.append(time);
-      }
-      body.append(title, info);
+      const meta = document.createElement("div");
+      meta.className = "task-meta";
+      const parts = [PRIORITY_LABEL[task.priority] ?? task.priority];
+      if (task.createdAt?.toDate) parts.push(formatDate(task.createdAt.toDate()));
+      meta.textContent = parts.join("  ·  ");
+      body.append(meta);
 
       const done = document.createElement("button");
       done.className = "complete";
       done.type = "button";
-      done.title = "完了してアーカイブ";
-      done.setAttribute("aria-label", `${task.title}を完了してアーカイブ`);
+      done.title = "完了";
+      done.setAttribute("aria-label", `${task.title} を完了`);
       done.textContent = "✓";
-      done.addEventListener("click", () => archiveTask(task.id));
+      done.addEventListener("click", () => archiveTask(task.id, row));
 
       row.append(body, done);
       return row;
@@ -676,7 +942,7 @@
       els.archiveList.replaceChildren();
       if (archivedTasks.length === 0) {
         const empty = document.createElement("div");
-        empty.className = "empty";
+        empty.className = "archive-empty";
         empty.textContent = "アーカイブは空です。";
         els.archiveList.append(empty);
         return;
@@ -684,22 +950,18 @@
       for (const task of archivedTasks) {
         const row = document.createElement("article");
         row.className = "archived-task";
-        const body = document.createElement("div");
+
+        const info = document.createElement("div");
+        info.className = "archived-info";
         const title = document.createElement("div");
         title.className = "archived-title";
         title.textContent = task.title;
-        const info = document.createElement("div");
-        info.className = "task-info";
-        const pill = document.createElement("span");
-        pill.className = "pill";
-        pill.textContent = PRIORITY_LABEL[task.priority] ?? task.priority;
-        info.append(pill);
-        if (task.archivedAt?.toDate) {
-          const time = document.createElement("span");
-          time.textContent = formatDate(task.archivedAt.toDate()) + " archived";
-          info.append(time);
-        }
-        body.append(title, info);
+        const m = document.createElement("div");
+        m.className = "archived-meta";
+        const parts = [PRIORITY_LABEL[task.priority] ?? task.priority];
+        if (task.archivedAt?.toDate) parts.push(formatDate(task.archivedAt.toDate()));
+        m.textContent = parts.join("  ·  ");
+        info.append(title, m);
 
         const restore = document.createElement("button");
         restore.className = "restore";
@@ -707,7 +969,7 @@
         restore.textContent = "Restore";
         restore.addEventListener("click", () => restoreTask(task.id));
 
-        row.append(body, restore);
+        row.append(info, restore);
         els.archiveList.append(row);
       }
     }
@@ -718,27 +980,47 @@
       }).format(date);
     }
 
-    async function openFloatingWindow() {
-      if (!pipSupported) return;
-      if (pipWindow && !pipWindow.closed) { pipWindow.focus(); return; }
+    /* ========= Floating / PiP ========= */
+    function renderPipButton() {
+      els.pipBtn.classList.toggle("on", floatingMode);
+      els.pipBtn.textContent = "Floating";
+    }
+
+    async function toggleFloating() {
+      if (floatingMode) {
+        setFloatingMode(false);
+        closePipProgrammatic();
+      } else {
+        setFloatingMode(true);
+        await ensurePipOpen();
+      }
+    }
+
+    function setFloatingMode(on) {
+      floatingMode = on;
+      localStorage.setItem("stw:floating", on ? "1" : "0");
+      renderPipButton();
+    }
+
+    async function ensurePipOpen() {
+      if (!pipSupported) return false;
+      if (pipWindow && !pipWindow.closed) return true;
       try {
         pipWindow = await documentPictureInPicture.requestWindow({
           width: 360, height: 180,
         });
         buildPipDocument(pipWindow.document);
         renderPip();
-        pipWindow.addEventListener("pagehide", () => {
-          pipWindow = null;
-          pipLabel = null;
-          pipBody = null;
-        });
+        pipWindow.addEventListener("pagehide", onPipPageHide);
+        return true;
       } catch (error) {
-        console.warn("PiP failed", error);
+        console.warn("PiP open failed (likely no user activation)", error);
+        return false;
       }
     }
 
     function buildPipDocument(pipDoc) {
-      pipDoc.title = "Single Task Worker";
+      pipDoc.title = "集中";
       const style = pipDoc.createElement("style");
       style.textContent = PIP_CSS;
       pipDoc.head.append(style);
@@ -746,52 +1028,48 @@
       const box = pipDoc.createElement("div");
       box.className = "box";
 
-      pipLabel = pipDoc.createElement("div");
-      pipLabel.className = "label";
-      pipLabel.textContent = "Focus Now";
+      pipLabelEl = pipDoc.createElement("div");
+      pipLabelEl.className = "label";
+      pipLabelEl.textContent = "Now";
 
-      pipBody = pipDoc.createElement("div");
+      pipBodyEl = pipDoc.createElement("div");
 
-      box.append(pipLabel, pipBody);
+      box.append(pipLabelEl, pipBodyEl);
       pipDoc.body.replaceChildren(box);
     }
 
-    function closePip() {
-      if (pipWindow && !pipWindow.closed) {
-        try { pipWindow.close(); } catch {}
-      }
+    function closePipProgrammatic() {
+      if (!pipWindow || pipWindow.closed) return;
+      closingPipProgrammatically = true;
+      try { pipWindow.close(); } catch {}
+    }
+
+    function onPipPageHide() {
+      const wasProgrammatic = closingPipProgrammatically;
+      closingPipProgrammatically = false;
       pipWindow = null;
-      pipLabel = null;
-      pipBody = null;
+      pipLabelEl = null;
+      pipBodyEl = null;
+      if (!wasProgrammatic && floatingMode) {
+        // user closed PiP manually -> turn off mode
+        setFloatingMode(false);
+      }
     }
 
     function renderPip() {
-      if (!pipWindow || pipWindow.closed || !pipBody) return;
+      if (!pipWindow || pipWindow.closed || !pipBodyEl) return;
       const current = activeTasks[0];
-      pipBody.className = current ? "task" : "empty";
-      pipBody.textContent = current ? current.title : "タスクはありません";
+      pipBodyEl.className = current ? "task" : "empty";
+      pipBodyEl.textContent = current ? current.title : "no task";
     }
 
-    function maybeShowFloatingBanner() {
-      if (!pipSupported) return;
-      if (localStorage.getItem("stw:floatingPromptShown")) return;
-      els.banner.classList.add("visible");
-    }
-
-    function hideBanner() {
-      els.banner.classList.remove("visible");
-    }
-
-    function maybeAutoFloating() {
-      if (!pipSupported) return;
-      if (localStorage.getItem("stw:autoFloating") !== "1") return;
-      const handler = () => {
-        document.removeEventListener("click", handler, true);
-        document.removeEventListener("keydown", handler, true);
-        if (!pipWindow || pipWindow.closed) openFloatingWindow();
-      };
-      document.addEventListener("click", handler, true);
-      document.addEventListener("keydown", handler, true);
+    async function onVisibilityChange() {
+      if (!floatingMode) return;
+      if (document.visibilityState === "hidden") {
+        await ensurePipOpen();
+      } else {
+        closePipProgrammatic();
+      }
     }
   </script>
 </body>
