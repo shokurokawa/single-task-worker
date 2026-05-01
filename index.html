@@ -677,7 +677,9 @@
     const isStandalone =
       window.matchMedia("(display-mode: standalone)").matches ||
       window.navigator.standalone === true;
-    const useRedirect = isIOS || isStandalone;
+    // Standalone (PWA) mode can't use popups; everywhere else, prefer popup
+    // because Safari's ITP can break cross-domain redirect auth on GitHub Pages.
+    const useRedirect = isStandalone;
     const pipSupported = "documentPictureInPicture" in window;
 
     let app, auth, db, unsubscribe = null, currentUid = null;
