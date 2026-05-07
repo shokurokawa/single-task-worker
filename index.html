@@ -640,16 +640,27 @@
     const PIP_CSS = `
       * { box-sizing: border-box; margin: 0; padding: 0; }
       html, body { width: 100%; height: 100%; background: #000; color: #fff; }
-      body { display: grid; place-items: center; padding: 22px;
-             font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", system-ui, sans-serif; }
+      body { display: grid; place-items: center; padding: 16px 32px 16px 16px;
+             font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", system-ui, sans-serif;
+             opacity: 0.5; transition: opacity .18s ease; }
+      body:hover { opacity: 1; }
       .box { width: 100%; }
-      .label { color: #555; font-size: 10px; margin-bottom: 10px;
+      .label { color: #555; font-size: 8px; margin-bottom: 6px;
                letter-spacing: 0.22em; text-transform: uppercase; }
       .task { color: #fff; font-family: "Hiragino Mincho ProN", "Yu Mincho", serif;
-              font-size: 26px; font-weight: 700; line-height: 1.18;
+              font-size: 18px; font-weight: 700; line-height: 1.18;
               letter-spacing: -0.005em; overflow-wrap: anywhere; }
-      .empty { color: #444; font-size: 14px;
+      .empty { color: #444; font-size: 10px;
                font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; }
+      .complete { position: fixed; top: 6px; right: 6px;
+                  width: 20px; height: 20px; border-radius: 50%;
+                  border: 1px solid #555; background: transparent; color: #888;
+                  cursor: pointer; display: grid; place-items: center;
+                  font-size: 10px; padding: 0; line-height: 1;
+                  font-family: inherit;
+                  transition: border-color .15s, color .15s, transform .1s; }
+      .complete:hover { border-color: #fff; color: #fff; }
+      .complete:active { transform: scale(0.92); }
     `;
 
     const els = {
@@ -686,6 +697,7 @@
     let pipWindow = null;
     let pipLabelEl = null;
     let pipBodyEl = null;
+    let pipCompleteBtn = null;
     let closingPipProgrammatically = false;
     let floatingMode = localStorage.getItem("stw:floating") === "1";
     let selectedPriority = "high";
@@ -1007,7 +1019,7 @@
       if (pipWindow && !pipWindow.closed) return true;
       try {
         pipWindow = await documentPictureInPicture.requestWindow({
-          width: 360, height: 180,
+          width: 259, height: 113,
         });
         buildPipDocument(pipWindow.document);
         renderPip();
@@ -1035,7 +1047,21 @@
       pipBodyEl = pipDoc.createElement("div");
 
       box.append(pipLabelEl, pipBodyEl);
-      pipDoc.body.replaceChildren(box);
+
+      pipCompleteBtn = pipDoc.createElement("button");
+      pipCompleteBtn.type = "button";
+      pipCompleteBtn.className = "complete";
+      pipCompleteBtn.title = "完了";
+      pipCompleteBtn.textContent = "✓";
+      pipCompleteBtn.addEventListener("click", onPipComplete);
+
+      pipDoc.body.replaceChildren(box, pipCompleteBtn);
+    }
+
+    function onPipComplete() {
+      const current = activeTasks[0];
+      if (!current) return;
+      archiveTask(current.id, null);
     }
 
     function closePipProgrammatic() {
@@ -1050,6 +1076,7 @@
       pipWindow = null;
       pipLabelEl = null;
       pipBodyEl = null;
+      pipCompleteBtn = null;
       if (!wasProgrammatic && floatingMode) {
         // user closed PiP manually -> turn off mode
         setFloatingMode(false);
@@ -1061,6 +1088,9 @@
       const current = activeTasks[0];
       pipBodyEl.className = current ? "task" : "empty";
       pipBodyEl.textContent = current ? current.title : "no task";
+      if (pipCompleteBtn) {
+        pipCompleteBtn.style.display = current ? "" : "none";
+      }
     }
 
     async function onVisibilityChange() {
